@@ -9,8 +9,36 @@
 	<?php require_once 'connection.php'; ?>
 	<?php require_once 'library.php'; ?>
 
+	<nav class="navbar navbar-default">
+	  <div class="container-fluid">
+	    <div class="navbar-header">
+	      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+	        <span class="sr-only">Toggle navigation</span>
+	        <span class="icon-bar"></span>
+	        <span class="icon-bar"></span>
+	        <span class="icon-bar"></span>
+	      </button>
+	    </div>
+
+	    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+	      <form method="get" class="navbar-form navbar-left" role="search" action="index.php">
+	        <div class="form-group">
+	          <input type="text" value="<?php echo (isset($_REQUEST['search'])) ? $_REQUEST['search'] : ''; ?>" name="search" class="form-control" placeholder="Search name..">
+	        </div>
+	        <button type="submit" class="btn btn-default">Search</button>
+	      </form>
+	      <ul class="nav navbar-nav navbar-right">
+	        <li><a id="force_add">Add data</a></li>
+	      </ul>
+	    </div>
+	  </div>
+	</nav>
+
 	<div class="container">
 		<h3>Music Genre dataset</h3>
+		<?php if (isset($_REQUEST['search'])): ?>
+			<span style="float:right;"><a href="index.php" class="btn btn-danger"/>Clear Filters</a></span>
+		<?php endif ?>
 		
 		<?php
 			$kpop = new Formulas;
@@ -50,9 +78,13 @@
 					<?php foreach ($stored_data as $data): ?>
 						<tr>
 							<?php if (is_array($data)): ?>
-								<?php foreach ($data as $record): ?>
+								<?php foreach ($data as $key => $record): ?>
 									<td>
-										<?php echo $record; ?>
+										<?php if ($key == 'name'): ?>
+											<a href="#" class='open_obj' ref="<?php echo $data['survey_id']; ?>"><?php echo $record; ?></a>
+										<?php else: ?>
+											<?php echo $record; ?>
+										<?php endif ?>
 									</td>
 								<?php endforeach ?>
 							<?php endif ?>
@@ -283,6 +315,52 @@
 
 	</div>
 
+	<div class="modal" id="add-modal">
+	  <form type="submit" action="_process.php" method="post">
+	  <div class="modal-dialog">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+	        <h4 class="modal-title">Add Data</h4>
+	      </div>
+	      <div class="modal-body">
+	       <input type="hidden" name="survey_id"> 
+	       <div class="form-group">
+		    <label for="name">Name</label>
+		    <input type="text" required class="form-control" id="name" placeholder="Name" name="name">
+		  </div>
+		  <div class="form-group">
+		    <label for="kpop">Kpop</label>
+		    <input type="number" required class="form-control" id="kpop" placeholder="kpop" name="kpop">
+		  </div>
+		  <div class="form-group">
+		    <label for="opm">Opm</label>
+		    <input type="number" required class="form-control" id="opm" placeholder="opm" name="opm">
+		  </div>
+		  <div class="form-group">
+		    <label for="rnb">Rnb</label>
+		    <input type="number" required class="form-control" id="rnb" placeholder="rnb" name="rnb">
+		  </div>
+		  <div class="form-group">
+		    <label for="rock">Rock</label>
+		    <input type="number" required class="form-control" id="rock" placeholder="rock" name="rock">
+		  </div>
+		  <div class="form-group">
+		    <label for="lovesong">Lovesong</label>
+		    <input type="number" required class="form-control" id="lovesong" placeholder="lovesong" name="lovesong">
+		  </div>
+	        
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+	        <a id="btn_delete" class="btn btn-danger">Delete</a>
+	        <button type="submit" class="btn btn-primary" id="btn_handler" name="add-data">Save changes</button>
+	      </div>
+	    </div>
+	  </div>
+	  </form>
+	</div>
+
 	<footer>
 		<hr>
 	</footer>
@@ -290,4 +368,39 @@
 </body>
 	<script src="assets/jquery.js"></script>
 	<script src="assets/bootstrap.min.js"></script>
+	<script>
+		$(function(){
+			$('#force_add').click(function(){
+				$('#add-modal form .form-group > input').val('');
+				$('#btn_handler').attr('name','add-data');
+				$('#btn_delete').hide();
+				$('#btn_delete').removeAttr('href');
+				$('#add-modal').modal('show');
+			});
+
+			$('.open_obj').click(function(){
+
+				var id = $(this).attr('ref');
+
+				$.ajax({
+					url: '_process.php',
+					type: 'post',
+					data: {
+						'fetch-data': true,
+						'id': id
+					}
+				}).done(function(res){
+					var data = $.parseJSON(res);
+					$.map(data, function(val, index){
+   						$('form input[name='+index+']').val(val);
+					});
+					$('#btn_handler').attr('name','update-data');
+					$('#btn_delete').show();
+					$('#btn_delete').attr('href', '_process.php?delete-data=1&id=' + id);
+					$('#add-modal').modal('show');
+				});
+				
+			});
+		});
+	</script>
 </html>

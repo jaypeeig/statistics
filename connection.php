@@ -16,11 +16,14 @@
 	$genres['lovesong'] = Array();
 	$genres['rock'] = Array();
 
+	$search = (isset($_REQUEST['search'])) ? " WHERE `name` LIKE '%{$_REQUEST['search']}%' " : '';
+
 	$sql = "SELECT * 
-			FROM `surveytable`
+			FROM `surveytable` 
+			{$search}
 			ORDER BY `survey_id` DESC
 			";
-
+			
 	if ( ! $result = $mysqli->query($sql)) {
 		echo $mysqli->error;
 	}
