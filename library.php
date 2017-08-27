@@ -50,7 +50,6 @@ class Formulas
 			$row[4]= ($max + 0.5);
 			$row[5]= ($min - $max / 2);
 
-			array_push($row); 
 			array_push($table, $row);
 		}
 
